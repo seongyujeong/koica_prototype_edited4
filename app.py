@@ -48,13 +48,18 @@ with open(os.path.join(current_dir, "gameData.js"), "r", encoding="utf-8") as f:
 
 # 4. Streamlit components.html은 iframe에서 실행되므로 외부 파일 연결이 불가능합니다.
 # 따라서 로컬 CSS와 JS 코드를 HTML 파일 안에 동적으로 직접 주입(Inline)합니다.
-html_content = html_content.replace(
-    '<link rel="stylesheet" href="style.css">',
-    f'<style>{css_content}</style>'
+# 정규표현식을 활용하여 파일 경로 표기 방식(./)이나 쿼리 스트링(?v=...) 유무에 무관하게 매칭하여 주입합니다.
+import re
+
+html_content = re.sub(
+    r'<link\s+rel=["\']stylesheet["\']\s+href=["\']\s*\.?/?style\.css\s*["\']\s*/*>',
+    f'<style>{css_content}</style>',
+    html_content
 )
-html_content = html_content.replace(
-    '<script src="gameData.js"></script>',
-    f'<script>{js_content}</script>'
+html_content = re.sub(
+    r'<script\s+src=["\']\s*\.?/?gameData\.js(?:\?[^"\']*)?["\']\s*></script>',
+    f'<script>{js_content}</script>',
+    html_content
 )
 
 # 5. iframe으로 인라인 통합된 HTML 게임 구동
